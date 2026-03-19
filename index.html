@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RestaurantOS — Genera tu sitio web</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #080808;
+      --surface:  #111;
+      --border:   rgba(255,255,255,0.07);
+      --white:    #f5f5f0;
+      --dim:      rgba(245,245,240,0.45);
+      --accent:   #e8ff5a;
+      --accent2:  #ff6b35;
+      --radius:   16px;
+      --font-h:   'Syne', sans-serif;
+      --font-b:   'Instrument Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: var(--font-b);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 20px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,8,8,0.85);
+      backdrop-filter: blur(20px);
+    }
+
+    .logo {
+      font-family: var(--font-h);
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    .logo span { color: var(--accent); }
+
+    .header-badge {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--dim);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 999px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 120px 40px 80px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* Glow de fondo */
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 20%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(ellipse, rgba(232,255,90,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .hero-eyebrow::before, .hero-eyebrow::after {
+      content: '';
+      width: 32px; height: 1px;
+      background: var(--accent);
+      opacity: 0.5;
+    }
+
+    .hero-title {
+      font-family: var(--font-h);
+      font-size: clamp(2.8rem, 7vw, 6rem);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      margin-bottom: 28px;
+      max-width: 800px;
+    }
+
+    .hero-title em {
+      font-style: normal;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(245,245,240,0.3);
+    }
+
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--dim);
+      line-height: 1.7;
+      max-width: 480px;
+      margin-bottom: 56px;
+    }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      position: relative;
+      width: 100%;
+      max-width: 520px;
+      border: 1.5px dashed rgba(232,255,90,0.25);
+      border-radius: 24px;
+      padding: 56px 40px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      background: rgba(232,255,90,0.02);
+      z-index: 1;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(232,255,90,0.05);
+      transform: translateY(-2px);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
+    }
+
+    .upload-icon {
+      width: 56px; height: 56px;
+      border-radius: 16px;
+      background: rgba(232,255,90,0.1);
+      border: 1px solid rgba(232,255,90,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 1.5rem;
+    }
+
+    .upload-title {
+      font-family: var(--font-h);
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .upload-sub {
+      font-size: 0.82rem;
+      color: var(--dim);
+      line-height: 1.6;
+    }
+
+    .upload-sub strong {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* Preview del logo */
+    .logo-preview {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo-preview img {
+      max-width: 160px;
+      max-height: 120px;
+      object-fit: contain;
+      border-radius: 12px;
+    }
+
+    .logo-preview-name {
+      font-size: 0.8rem;
+      color: var(--dim);
+    }
+
+    /* ── GENERATE BUTTON ── */
+    .btn-generate {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: #080808;
+      border: none;
+      border-radius: 999px;
+      padding: 16px 36px;
+      font-family: var(--font-h);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-generate:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(232,255,90,0.25);
+    }
+
+    .btn-generate:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-generate svg { width: 18px; height: 18px; }
+
+    /* ── STEPS ── */
+    .steps {
+      position: relative;
+      z-index: 1;
+      padding: 80px 40px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .steps-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--dim);
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .step-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .step-card:hover::before { opacity: 1; }
+
+    .step-num {
+      font-family: var(--font-h);
+      font-size: 3rem;
+      font-weight: 800;
+      color: rgba(232,255,90,0.08);
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .step-title {
+      font-family: var(--font-h);
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      font-size: 0.85rem;
+      color: var(--dim);
+      line-height: 1.6;
+    }
+
+    /* ── RESULT PANEL ── */
+    #result-panel {
+      display: none;
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto 80px;
+      padding: 0 40px;
+    }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(232,255,90,0.04) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .result-title {
+      font-family: var(--font-h);
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .result-sub {
+      font-size: 0.85rem;
+      color: var(--dim);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    /* Paleta generada */
+    .palette {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .swatch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch-color {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .swatch-label {
+      font-size: 0.65rem;
+      color: var(--dim);
+      font-family: monospace;
+    }
+
+    /* Tipografías */
+    .fonts-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .font-chip {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      color: var(--dim);
+    }
+
+    .font-chip strong {
+      color: var(--white);
+      font-weight: 600;
+      display: block;
+      font-size: 0.85rem;
+    }
+
+    /* Style tag */
+    .style-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(232,255,90,0.1);
+      border: 1px solid rgba(232,255,90,0.2);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    /* Tokens preview */
+    .tokens-preview {
+      background: #080808;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      color: #8b949e;
+      line-height: 1.8;
+      margin-bottom: 28px;
+      max-height: 200px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    .tokens-preview .tk-var { color: #79c0ff; }
+    .tokens-preview .tk-val { color: #a5d6ff; }
+    .tokens-preview .tk-comment { color: #3d444d; }
+
+    /* Download button */
+    .btn-download {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: var(--accent);
+      color: #080808;
+      border: none;
+      border-radius: 12px;
+      padding: 16px;
+      font-family: var(--font-h);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-download:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(232,255,90,0.2);
+    }
+
+    /* ── LOADING STATE ── */
+    .loading-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(8,8,8,0.92);
+      backdrop-filter: blur(12px);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+
+    .loading-overlay.is-active { display: flex; }
+
+    .loader-ring {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      border: 2px solid rgba(232,255,90,0.15);
+      border-top-color: var(--accent);
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 320px;
+      width: 100%;
+    }
+
+    .loading-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.85rem;
+      color: var(--dim);
+      transition: color 0.3s;
+    }
+
+    .loading-step.is-active { color: var(--white); }
+    .loading-step.is-done { color: var(--accent); }
+
+    .loading-step-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+
+    .loading-step.is-active .loading-step-dot { background: var(--white); }
+    .loading-step.is-done .loading-step-dot { background: var(--accent); }
+
+    /* ── ERROR ── */
+    .error-msg {
+      display: none;
+      background: rgba(255,80,80,0.08);
+      border: 1px solid rgba(255,80,80,0.2);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 0.85rem;
+      color: #ff8080;
+      margin-top: 16px;
+      max-width: 520px;
+      text-align: left;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 40px;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--dim);
+      position: relative; z-index: 1;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      header { padding: 16px 20px; }
+      .hero { padding: 100px 20px 60px; }
+      .steps { padding: 60px 20px; }
+      .steps-grid { grid-template-columns: 1fr; }
+      #result-panel { padding: 0 20px; }
+      .result-card { padding: 28px 20px; }
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-eyebrow  { animation: fadeUp 0.6s ease both; }
+    .hero-title    { animation: fadeUp 0.6s 0.1s ease both; }
+    .hero-sub      { animation: fadeUp 0.6s 0.2s ease both; }
+    .upload-zone   { animation: fadeUp 0.6s 0.3s ease both; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <a href="#" class="logo">Restaurant<span>OS</span></a>
+    <span class="header-badge">Beta · Solo logos</span>
+  </header>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loading">
+    <div class="loader-ring"></div>
+    <div class="loading-steps">
+      <div class="loading-step" id="ls-1">
+        <span class="loading-step-dot"></span>
+        Analizando tu logo con IA
+      </div>
+      <div class="loading-step" id="ls-2">
+        <span class="loading-step-dot"></span>
+        Extrayendo paleta de colores
+      </div>
+      <div class="loading-step" id="ls-3">
+        <span class="loading-step-dot"></span>
+        Eligiendo tipografías
+      </div>
+      <div class="loading-step" id="ls-4">
+        <span class="loading-step-dot"></span>
+        Generando tokens CSS únicos
+      </div>
+      <div class="loading-step" id="ls-5">
+        <span class="loading-step-dot"></span>
+        Preparando tu sitio
+      </div>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <p class="hero-eyebrow">Powered by Claude AI</p>
+    <h1 class="hero-title">
+      Tu restaurante,<br/>
+      <em>un sitio único</em>
+    </h1>
+    <p class="hero-sub">
+      Sube tu logo y la IA genera automáticamente un sitio web con
+      colores, tipografías y estilo visual extraídos de tu marca.
+    </p>
+
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="logoInput" accept="image/*"/>
+      <div class="upload-placeholder" id="uploadPlaceholder">
+        <div class="upload-icon">⬆</div>
+        <p class="upload-title">Sube tu logo aquí</p>
+        <p class="upload-sub">
+          Arrastra o haz click · <strong>PNG, SVG, JPG</strong><br/>
+          La IA analizará tu marca y generará el estilo completo
+        </p>
+      </div>
+      <div class="logo-preview" id="logoPreview">
+        <img id="logoImg" src="" alt="Logo preview"/>
+        <span class="logo-preview-name" id="logoName"></span>
+      </div>
+    </div>
+
+    <div class="error-msg" id="errorMsg"></div>
+
+    <button class="btn-generate" id="btnGenerate" onclick="generateSite()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+      </svg>
+      Generar sitio con IA
+    </button>
+  </section>
+
+  <!-- Result panel -->
+  <div id="result-panel">
+    <div class="result-card">
+      <div class="style-tag" id="styleTag">✦ Estilo detectado</div>
+      <h2 class="result-title">Tu identidad visual está lista</h2>
+      <p class="result-sub" id="resultDesc">La IA analizó tu logo y generó una identidad visual única.</p>
+
+      <p style="font-size:0.75rem;color:var(--dim);margin-bottom:10px;letter-spacing:0.1em;text-transform:uppercase;">Paleta de colores</p>
+      <div class="palette" id="paletteDisplay"></div>
+
+      <p style="font-size:0.75rem;color:var(--dim);margin-bottom:10px;letter-spacing:0.1em;text-transform:uppercase;">Tipografías</p>
+      <div class="fonts-row" id="fontsDisplay"></div>
+
+      <p style="font-size:0.75rem;color:var(--dim);margin-bottom:10px;letter-spacing:0.1em;text-transform:uppercase;">tokens.css generado</p>
+      <div class="tokens-preview" id="tokensDisplay"></div>
+
+      <a href="#" class="btn-download" id="btnDownload">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="width:18px;height:18px;">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        Descargar tokens.css
+      </a>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <section class="steps">
+    <p class="steps-label">Cómo funciona</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <h3 class="step-title">Sube tu logo</h3>
+        <p class="step-desc">Solo necesitas tu logo. PNG, SVG o JPG — la IA hace el resto del trabajo.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <h3 class="step-title">IA analiza tu marca</h3>
+        <p class="step-desc">Claude analiza colores, estilo y personalidad de tu marca para generar una identidad visual única.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <h3 class="step-title">Sitio listo</h3>
+        <p class="step-desc">Descarga el tokens.css generado. Se aplica automáticamente a todo el sitio del restaurante.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    RestaurantOS · Generación de sitios web con IA · Beta
+  </footer>
+
+  <script>
+    const uploadZone    = document.getElementById('uploadZone')
+    const logoInput     = document.getElementById('logoInput')
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder')
+    const logoPreview   = document.getElementById('logoPreview')
+    const logoImg       = document.getElementById('logoImg')
+    const logoName      = document.getElementById('logoName')
+    const btnGenerate   = document.getElementById('btnGenerate')
+    const loading       = document.getElementById('loading')
+    const resultPanel   = document.getElementById('result-panel')
+    const errorMsg      = document.getElementById('errorMsg')
+
+    let selectedFile = null
+
+    // Drag & drop
+    uploadZone.addEventListener('dragover',  e => { e.preventDefault(); uploadZone.classList.add('drag-over') })
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'))
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault()
+      uploadZone.classList.remove('drag-over')
+      const file = e.dataTransfer.files[0]
+      if (file) handleFile(file)
+    })
+
+    logoInput.addEventListener('change', e => {
+      const file = e.target.files[0]
+      if (file) handleFile(file)
+    })
+
+    function handleFile(file) {
+      if (!file.type.startsWith('image/')) {
+        showError('Por favor sube una imagen (PNG, SVG, JPG).')
+        return
+      }
+      selectedFile = file
+      const reader = new FileReader()
+      reader.onload = e => {
+        logoImg.src = e.target.result
+        logoName.textContent = file.name
+        uploadPlaceholder.style.display = 'none'
+        logoPreview.style.display = 'flex'
+        btnGenerate.style.display = 'flex'
+        hideError()
+      }
+      reader.readAsDataURL(file)
+    }
+
+    function showError(msg) {
+      errorMsg.textContent = msg
+      errorMsg.style.display = 'block'
+    }
+
+    function hideError() {
+      errorMsg.style.display = 'none'
+    }
+
+    // Loading steps animation
+    const STEPS = ['ls-1','ls-2','ls-3','ls-4','ls-5']
+    const STEP_DELAYS = [0, 1200, 2400, 3600, 5000]
+
+    function startLoadingAnimation() {
+      STEPS.forEach(id => {
+        document.getElementById(id).className = 'loading-step'
+      })
+      STEPS.forEach((id, i) => {
+        setTimeout(() => {
+          if (i > 0) document.getElementById(STEPS[i-1]).className = 'loading-step is-done'
+          document.getElementById(id).className = 'loading-step is-active'
+        }, STEP_DELAYS[i])
+      })
+    }
+
+    async function generateSite() {
+      if (!selectedFile) return
+
+      hideError()
+      btnGenerate.disabled = true
+      loading.classList.add('is-active')
+      startLoadingAnimation()
+
+      try {
+        // Convertir imagen a base64
+        const base64 = await fileToBase64(selectedFile)
+        const mediaType = selectedFile.type || 'image/png'
+
+        // Llamar a la Netlify Function
+        const response = await fetch('/.netlify/functions/generate-tokens', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64, mediaType })
+        })
+
+        if (!response.ok) {
+          const err = await response.json()
+          throw new Error(err.error || 'Error del servidor')
+        }
+
+        const data = await response.json()
+
+        // Marcar último paso como done
+        setTimeout(() => {
+          document.getElementById('ls-5').className = 'loading-step is-done'
+          setTimeout(() => {
+            loading.classList.remove('is-active')
+            showResult(data)
+          }, 600)
+        }, 5500)
+
+      } catch (err) {
+        loading.classList.remove('is-active')
+        btnGenerate.disabled = false
+        showError('Error al generar: ' + err.message)
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = e => resolve(e.target.result.split(',')[1])
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+    }
+
+    function showResult(data) {
+      // Style tag
+      document.getElementById('styleTag').textContent = `✦ ${data.style}`
+
+      // Descripción
+      document.getElementById('resultDesc').textContent = data.description
+
+      // Paleta
+      const palette = document.getElementById('paletteDisplay')
+      palette.innerHTML = ''
+      data.colors.forEach(c => {
+        palette.innerHTML += `
+          <div class="swatch">
+            <div class="swatch-color" style="background:${c.hex}"></div>
+            <span class="swatch-label">${c.hex}</span>
+          </div>`
+      })
+
+      // Fuentes
+      const fonts = document.getElementById('fontsDisplay')
+      fonts.innerHTML = ''
+      data.fonts.forEach(f => {
+        fonts.innerHTML += `
+          <div class="font-chip">
+            <strong>${f.name}</strong>
+            ${f.role}
+          </div>`
+      })
+
+      // Tokens CSS
+      const tokensDiv = document.getElementById('tokensDisplay')
+      tokensDiv.innerHTML = highlightCSS(data.tokens_css)
+
+      // Download button
+      const blob = new Blob([data.tokens_css], { type: 'text/css' })
+      const url = URL.createObjectURL(blob)
+      const btn = document.getElementById('btnDownload')
+      btn.href = url
+      btn.download = 'tokens.css'
+
+      // Mostrar panel
+      resultPanel.style.display = 'block'
+      resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+
+    function highlightCSS(css) {
+      return css
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/(--[\w-]+)/g, '<span class="tk-var">$1</span>')
+        .replace(/(#[0-9a-fA-F]{3,8}|rgba?\([^)]+\)|'[^']*')/g, '<span class="tk-val">$1</span>')
+        .replace(/(\/\*[^*]*\*\/)/g, '<span class="tk-comment">$1</span>')
+    }
+  </script>
+
+</body>
+</html>
